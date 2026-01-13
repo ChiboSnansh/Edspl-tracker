@@ -1,0 +1,99 @@
+{% extends "base.html" %}
+{% block title %}Audit Log - EDSPL Tracker{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h1 class="h3 mb-0"><i class="bi bi-journal-text me-2"></i>Audit Log</h1>
+</div>
+
+<!-- Filters -->
+<div class="card mb-4">
+    <div class="card-body">
+        <form method="GET" class="row g-3 align-items-end">
+            <div class="col-md-3">
+                <label class="form-label small">Ticket Number</label>
+                <input type="text" name="ticket_number" class="form-control form-control-sm"
+                       placeholder="EDSPL-2025-..." value="{{ request.args.get('ticket_number', '') }}">
+            </div>
+            <div class="col-md-3">
+                <label class="form-label small">Start Date</label>
+                <input type="date" name="start_date" class="form-control form-control-sm"
+                       value="{{ request.args.get('start_date', '') }}">
+            </div>
+            <div class="col-md-3">
+                <label class="form-label small">End Date</label>
+                <input type="date" name="end_date" class="form-control form-control-sm"
+                       value="{{ request.args.get('end_date', '') }}">
+            </div>
+            <div class="col-md-2">
+                <button type="submit" class="btn btn-primary btn-sm w-100">Filter</button>
+            </div>
+            <div class="col-md-1">
+                <a href="{{ url_for('audit_log') }}" class="btn btn-outline-secondary btn-sm w-100">Clear</a>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Audit Table -->
+<div class="card">
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table table-hover table-striped mb-0">
+                <thead class="table-dark">
+                    <tr>
+                        <th>Timestamp</th>
+                        <th>Ticket</th>
+                        <th>User</th>
+                        <th>Action</th>
+                        <th>Previous Value</th>
+                        <th>New Value</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for activity in activities %}
+                    <tr>
+                        <td class="small">{{ activity.created_at.strftime('%Y-%m-%d %H:%M:%S') }}</td>
+                        <td>
+                            <a href="{{ url_for('ticket_view', ticket_id=activity.ticket.id) }}" class="fw-bold text-primary">
+                                {{ activity.ticket.ticket_number }}
+                            </a>
+                        </td>
+                        <td>{{ activity.user.full_name }}</td>
+                        <td><span class="badge bg-secondary">{{ activity.action|replace('_', ' ')|title }}</span></td>
+                        <td class="small text-muted">{{ activity.old_value or '-' }}</td>
+                        <td class="small">{{ activity.new_value or '-' }}</td>
+                    </tr>
+                    {% else %}
+                    <tr>
+                        <td colspan="6" class="text-center text-muted py-5">
+                            <i class="bi bi-journal display-4 d-block mb-3"></i>
+                            No audit records found
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<div class="text-muted small mt-3">
+    Showing {{ activities|length }} record(s) (max 500)
+</div>
+
+<div class="card mt-4">
+    <div class="card-header bg-info text-white">
+        <i class="bi bi-info-circle me-2"></i>Compliance Information
+    </div>
+    <div class="card-body">
+        <p class="mb-1"><strong>Audit Trail Features:</strong></p>
+        <ul class="mb-0">
+            <li>All ticket actions are logged with timestamp and user attribution</li>
+            <li>Status changes, assignments, comments, and attachments are tracked</li>
+            <li>Previous and new values are recorded for change tracking</li>
+            <li>Records are immutable and cannot be deleted</li>
+        </ul>
+    </div>
+</div>
+{% endblock %}

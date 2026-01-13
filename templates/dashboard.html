@@ -1,0 +1,139 @@
+{% extends "base.html" %}
+{% block title %}Dashboard - EDSPL Tracker{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h1 class="h3 mb-0"><i class="bi bi-speedometer2 me-2"></i>Dashboard</h1>
+    <a href="{{ url_for('ticket_create') }}" class="btn btn-primary">
+        <i class="bi bi-plus-circle me-1"></i>New Ticket
+    </a>
+</div>
+
+<!-- Stats Cards -->
+<div class="row mb-4">
+    <div class="col-md-2">
+        <div class="card stat-card">
+            <div class="card-body text-center">
+                <div class="stat-number">{{ stats.total }}</div>
+                <div class="stat-label">Total Tickets</div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-2">
+        <div class="card stat-card stat-open">
+            <div class="card-body text-center">
+                <div class="stat-number">{{ stats.open }}</div>
+                <div class="stat-label">Open</div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-2">
+        <div class="card stat-card stat-progress">
+            <div class="card-body text-center">
+                <div class="stat-number">{{ stats.in_progress }}</div>
+                <div class="stat-label">In Progress</div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-2">
+        <div class="card stat-card stat-resolved">
+            <div class="card-body text-center">
+                <div class="stat-number">{{ stats.resolved }}</div>
+                <div class="stat-label">Resolved</div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-2">
+        <div class="card stat-card stat-closed">
+            <div class="card-body text-center">
+                <div class="stat-number">{{ stats.closed }}</div>
+                <div class="stat-label">Closed</div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-2">
+        <div class="card stat-card stat-assigned">
+            <div class="card-body text-center">
+                <div class="stat-number">{{ stats.my_assigned }}</div>
+                <div class="stat-label">My Active</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <!-- Recent Tickets -->
+    <div class="col-lg-7 mb-4">
+        <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <span><i class="bi bi-ticket me-2"></i>Recent Tickets</span>
+                <a href="{{ url_for('ticket_list') }}" class="btn btn-sm btn-outline-primary">View All</a>
+            </div>
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-hover mb-0">
+                        <thead>
+                            <tr>
+                                <th>Ticket</th>
+                                <th>Title</th>
+                                <th>Status</th>
+                                <th>Priority</th>
+                                <th>Created</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for ticket in recent_tickets %}
+                            <tr onclick="window.location='{{ url_for('ticket_view', ticket_id=ticket.id) }}'" style="cursor:pointer;">
+                                <td class="fw-bold text-primary">{{ ticket.ticket_number }}</td>
+                                <td>{{ ticket.title|truncate(40) }}</td>
+                                <td><span class="badge {{ ticket.status|status_badge }}">{{ ticket.status|replace('_', ' ')|title }}</span></td>
+                                <td><span class="badge {{ ticket.priority|priority_badge }}">{{ ticket.priority|title }}</span></td>
+                                <td class="text-muted small">{{ ticket.created_at|timeago }}</td>
+                            </tr>
+                            {% else %}
+                            <tr>
+                                <td colspan="5" class="text-center text-muted py-4">No tickets yet</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Recent Activity -->
+    <div class="col-lg-5 mb-4">
+        <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <span><i class="bi bi-activity me-2"></i>Recent Activity</span>
+                <a href="{{ url_for('audit_log') }}" class="btn btn-sm btn-outline-primary">Audit Log</a>
+            </div>
+            <div class="card-body p-0">
+                <ul class="list-group list-group-flush activity-list">
+                    {% for activity in recent_activity %}
+                    <li class="list-group-item">
+                        <div class="d-flex justify-content-between align-items-start">
+                            <div>
+                                <strong class="text-primary">{{ activity.ticket.ticket_number }}</strong>
+                                <span class="text-muted mx-1">-</span>
+                                <span class="activity-action">{{ activity.action|replace('_', ' ')|title }}</span>
+                                {% if activity.new_value %}
+                                <span class="text-muted">to</span>
+                                <span class="badge bg-secondary">{{ activity.new_value }}</span>
+                                {% endif %}
+                                <br>
+                                <small class="text-muted">by {{ activity.user.full_name }}</small>
+                            </div>
+                            <small class="text-muted">{{ activity.created_at|timeago }}</small>
+                        </div>
+                    </li>
+                    {% else %}
+                    <li class="list-group-item text-center text-muted py-4">No activity yet</li>
+                    {% endfor %}
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

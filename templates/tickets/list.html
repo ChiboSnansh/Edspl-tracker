@@ -1,0 +1,111 @@
+{% extends "base.html" %}
+{% block title %}Tickets - EDSPL Tracker{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h1 class="h3 mb-0"><i class="bi bi-ticket me-2"></i>All Tickets</h1>
+    <a href="{{ url_for('ticket_create') }}" class="btn btn-primary">
+        <i class="bi bi-plus-circle me-1"></i>New Ticket
+    </a>
+</div>
+
+<!-- Filters -->
+<div class="card mb-4">
+    <div class="card-body">
+        <form method="GET" class="row g-3 align-items-end">
+            <div class="col-md-2">
+                <label class="form-label small">Status</label>
+                <select name="status" class="form-select form-select-sm">
+                    <option value="">All Status</option>
+                    <option value="open" {{ 'selected' if request.args.get('status') == 'open' }}>Open</option>
+                    <option value="in_progress" {{ 'selected' if request.args.get('status') == 'in_progress' }}>In Progress</option>
+                    <option value="resolved" {{ 'selected' if request.args.get('status') == 'resolved' }}>Resolved</option>
+                    <option value="closed" {{ 'selected' if request.args.get('status') == 'closed' }}>Closed</option>
+                </select>
+            </div>
+            <div class="col-md-2">
+                <label class="form-label small">Priority</label>
+                <select name="priority" class="form-select form-select-sm">
+                    <option value="">All Priority</option>
+                    <option value="critical" {{ 'selected' if request.args.get('priority') == 'critical' }}>Critical</option>
+                    <option value="high" {{ 'selected' if request.args.get('priority') == 'high' }}>High</option>
+                    <option value="medium" {{ 'selected' if request.args.get('priority') == 'medium' }}>Medium</option>
+                    <option value="low" {{ 'selected' if request.args.get('priority') == 'low' }}>Low</option>
+                </select>
+            </div>
+            <div class="col-md-2">
+                <label class="form-label small">Category</label>
+                <select name="category" class="form-select form-select-sm">
+                    <option value="">All Categories</option>
+                    <option value="network" {{ 'selected' if request.args.get('category') == 'network' }}>Network</option>
+                    <option value="security" {{ 'selected' if request.args.get('category') == 'security' }}>Security</option>
+                    <option value="infrastructure" {{ 'selected' if request.args.get('category') == 'infrastructure' }}>Infrastructure</option>
+                    <option value="other" {{ 'selected' if request.args.get('category') == 'other' }}>Other</option>
+                </select>
+            </div>
+            <div class="col-md-2">
+                <label class="form-label small">Assigned</label>
+                <select name="assigned" class="form-select form-select-sm">
+                    <option value="">All</option>
+                    <option value="me" {{ 'selected' if request.args.get('assigned') == 'me' }}>Assigned to Me</option>
+                    <option value="unassigned" {{ 'selected' if request.args.get('assigned') == 'unassigned' }}>Unassigned</option>
+                </select>
+            </div>
+            <div class="col-md-3">
+                <label class="form-label small">Search</label>
+                <input type="text" name="search" class="form-control form-control-sm" placeholder="Ticket #, title..." value="{{ request.args.get('search', '') }}">
+            </div>
+            <div class="col-md-1">
+                <button type="submit" class="btn btn-primary btn-sm w-100">Filter</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Tickets Table -->
+<div class="card">
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table table-hover mb-0">
+                <thead>
+                    <tr>
+                        <th>Ticket #</th>
+                        <th>Title</th>
+                        <th>Category</th>
+                        <th>Status</th>
+                        <th>Priority</th>
+                        <th>Assigned To</th>
+                        <th>Created</th>
+                        <th>Updated</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for ticket in tickets %}
+                    <tr onclick="window.location='{{ url_for('ticket_view', ticket_id=ticket.id) }}'" style="cursor:pointer;">
+                        <td class="fw-bold text-primary">{{ ticket.ticket_number }}</td>
+                        <td>{{ ticket.title|truncate(50) }}</td>
+                        <td><span class="badge bg-secondary">{{ ticket.category|title }}</span></td>
+                        <td><span class="badge {{ ticket.status|status_badge }}">{{ ticket.status|replace('_', ' ')|title }}</span></td>
+                        <td><span class="badge {{ ticket.priority|priority_badge }}">{{ ticket.priority|title }}</span></td>
+                        <td>{{ ticket.assignee.full_name if ticket.assignee else '-' }}</td>
+                        <td class="text-muted small">{{ ticket.created_at|timeago }}</td>
+                        <td class="text-muted small">{{ ticket.updated_at|timeago }}</td>
+                    </tr>
+                    {% else %}
+                    <tr>
+                        <td colspan="8" class="text-center text-muted py-5">
+                            <i class="bi bi-inbox display-4 d-block mb-3"></i>
+                            No tickets found matching your criteria
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<div class="text-muted small mt-3">
+    Showing {{ tickets|length }} ticket(s)
+</div>
+{% endblock %}

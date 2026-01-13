@@ -1,0 +1,36 @@
+# Virtual environment
+venv/
+env/
+.venv/
+
+# Database
+*.db
+tracker.db
+
+# Uploads (user files)
+uploads/*
+!uploads/.gitkeep
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Environment variables
+.env
+*.env
+
+# Logs
+*.log
